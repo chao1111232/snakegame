@@ -1,6 +1,10 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Set canvas size dynamically
+canvas.width = Math.min(window.innerWidth * 0.9, 400);
+canvas.height = canvas.width;
+
 // Game settings
 const gridSize = 20;
 const tileCount = canvas.width / gridSize;
@@ -10,8 +14,8 @@ let direction = { x: 0, y: 0 };
 let score = 0;
 
 // Touch control variables
-let touchStartX = 0;
-let touchStartY = 0;
+let touchX = 0;
+let touchY = 0;
 
 // Game loop
 function gameLoop() {
@@ -83,51 +87,40 @@ function resetGame() {
     placeFood();
 }
 
-// Touch controls
-document.addEventListener('touchstart', (event) => {
-    touchStartX = event.touches[0].clientX;
-    touchStartY = event.touches[0].clientY;
+// Touch-and-move controls
+canvas.addEventListener('touchstart', (event) => {
+    event.preventDefault(); // Prevent default touch behavior
+    const touch = event.touches[0];
+    touchX = touch.clientX;
+    touchY = touch.clientY;
 });
 
-document.addEventListener('touchend', (event) => {
-    const touchEndX = event.changedTouches[0].clientX;
-    const touchEndY = event.changedTouches[0].clientY;
+canvas.addEventListener('touchmove', (event) => {
+    event.preventDefault(); // Prevent default touch behavior
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - touchX;
+    const deltaY = touch.clientY - touchY;
 
-    const deltaX = touchEndX - touchStartX;
-    const deltaY = touchEndY - touchStartY;
-
+    // Determine direction based on touch movement
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        // Horizontal swipe
+        // Horizontal movement
         if (deltaX > 0 && direction.x === 0) {
             direction = { x: 1, y: 0 }; // Right
         } else if (deltaX < 0 && direction.x === 0) {
             direction = { x: -1, y: 0 }; // Left
         }
     } else {
-        // Vertical swipe
+        // Vertical movement
         if (deltaY > 0 && direction.y === 0) {
             direction = { x: 0, y: 1 }; // Down
         } else if (deltaY < 0 && direction.y === 0) {
             direction = { x: 0, y: -1 }; // Up
         }
     }
-});
 
-// Button controls
-document.getElementById('up').addEventListener('click', () => {
-    if (direction.y === 0) direction = { x: 0, y: -1 };
-});
-
-document.getElementById('left').addEventListener('click', () => {
-    if (direction.x === 0) direction = { x: -1, y: 0 };
-});
-
-document.getElementById('down').addEventListener('click', () => {
-    if (direction.y === 0) direction = { x: 0, y: 1 };
-});
-
-document.getElementById('right').addEventListener('click', () => {
-    if (direction.x === 0) direction = { x: 1, y: 0 };
+    // Update touch position
+    touchX = touch.clientX;
+    touchY = touch.clientY;
 });
 
 // Start game
